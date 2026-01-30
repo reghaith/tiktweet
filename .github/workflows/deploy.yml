@@ -1,5 +1,6 @@
 name: Deploy to Cloudflare Pages
 
+# Auto-deploy on push to main branch or manual trigger
 on:
   push:
     branches:
