@@ -1,13 +1,805 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tiktweet</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vibe | The New Standard</title>
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Unified Brand Palette */
+            --bg-body: #09090b;
+            --bg-card: #18181b;
+            --bg-glass: rgba(24, 24, 27, 0.7);
+            --bg-hover: #27272a;
+            
+            --primary: #8b5cf6; /* Violet */
+            --primary-hover: #7c3aed;
+            --primary-glow: rgba(139, 92, 246, 0.4);
+            
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            
+            --accent-pink: #ec4899;
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+
+            --border: 1px solid rgba(255, 255,255, 0.08);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-full: 999px;
+            
+            --nav-width: 260px;
+            --queue-width: 350px;
+            --header-height: 70px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* --- Main Layout Grid --- */
+        .app-container {
+            display: grid;
+            grid-template-columns: var(--nav-width) 1fr var(--queue-width);
+            width: 100%;
+            height: 100%;
+            transition: all 0.4s ease;
+        }
+
+        /* Mode: Text Feed (Pulse) Default */
+        .app-container.mode-pulse {
+            grid-template-columns: var(--nav-width) 1fr 350px;
+        }
+
+        /* Mode: Video Feed (Flux) */
+        .app-container.mode-flux {
+            grid-template-columns: 80px 1fr var(--queue-width); 
+        }
+
+        /* --- Sidebar (Navigation) --- */
+        .sidebar {
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: var(--border);
+            height: 100%;
+            transition: width 0.4s ease, padding 0.4s ease;
+            background: var(--bg-body);
+            z-index: 50;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.5px;
+        }
+        
+        .logo i { color: var(--primary); font-size: 32px; }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--primary);
+        }
+
+        .nav-item i { font-size: 22px; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: white; border: none; padding: 14px 24px;
+            border-radius: 30px; font-weight: 600; cursor: pointer;
+            box-shadow: 0 10px 20px -5px var(--primary-glow);
+            transition: transform 0.2s; display: flex; align-items: center; gap: 8px; width: fit-content;
+        }
+        .btn-primary:hover { transform: translateY(-2px); }
+
+        /* --- Main Content Area --- */
+        .main-stage {
+            position: relative;
+            overflow: hidden;
+            border-right: var(--border);
+        }
+
+        .view-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: scale(0.98);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .view-container.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+            z-index: 10;
+        }
+
+        /* --- Pulse View (Text Feed) Styles --- */
+        #view-pulse {
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        #view-pulse::-webkit-scrollbar { width: 6px; }
+        #view-pulse::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
+
+        .pulse-header {
+            position: sticky;
+            top: 0;
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            padding: 20px;
+            z-index: 20;
+            border-bottom: var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .post-card {
+            padding: 24px 20px;
+            border-bottom: var(--border);
+            transition: background 0.2s;
+            display: flex;
+            gap: 16px;
+        }
+        .post-card:hover { background: rgba(255, 255, 255, 0.02); }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--bg-card); }
+        .pulse-actions { display: flex; justify-content: space-between; max-width: 400px; margin-top: 16px; }
+        .action-btn { background: none; border: none; color: var(--text-muted); display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .action-btn:hover { color: var(--primary); }
+        .action-btn.liked { color: var(--accent-pink); }
+
+        /* --- Flux View (Video Reels) Styles --- */
+        #view-flux {
+            background: black;
+            overflow: hidden;
+        }
+
+        .flux-feed {
+            height: 100%;
+            width: 100%;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none;
+        }
+        .flux-feed::-webkit-scrollbar { display: none; }
+
+        .reel-card {
+            height: 100%;
+            width: 100%;
+            scroll-snap-align: start;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .video-player {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        /* Loading Spinner */
+        .video-loader {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            z-index: 2;
+            animation: spin 1s linear infinite;
+            display: none; /* Hidden by default */
+        }
+
+        .flux-overlay {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 60%;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .flux-sidebar {
+            position: absolute;
+            right: 20px;
+            bottom: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 20;
+        }
+
+        .flux-action { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+        .flux-icon-wrap {
+            width: 48px; height: 48px; background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(4px); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            transition: transform 0.2s;
+        }
+        .flux-action:hover .flux-icon-wrap { transform: scale(1.1); }
+
+        .flux-info {
+            position: absolute; bottom: 40px; left: 0; width: 70%; padding: 0 20px; z-index: 20;
+        }
+
+        .music-disc {
+            width: 45px; height: 45px; background: #222; border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.2); overflow: hidden;
+            animation: spin 4s linear infinite;
+        }
+        .music-disc.paused { animation-play-state: paused; }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* --- Right Panel (Widgets vs Queue) --- */
+        .right-panel {
+            padding: 30px 20px;
+            height: 100%;
+            overflow-y: auto;
+            border-left: var(--border);
+            transition: opacity 0.4s ease;
+        }
+
+        .widget-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 24px;
+            border: var(--border);
+        }
+        .widget-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: var(--text-main); }
+        
+        .queue-item {
+            display: flex; gap: 12px; margin-bottom: 16px; cursor: pointer;
+            opacity: 0.7; transition: opacity 0.2s; padding: 10px; border-radius: 12px;
+        }
+        .queue-item:hover, .queue-item.active { opacity: 1; background: var(--bg-hover); }
+
+        /* --- Mobile Navigation --- */
+        .mobile-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
+            background: rgba(9, 9, 11, 0.95); backdrop-filter: blur(10px);
+            display: none; justify-content: space-around; align-items: center;
+            z-index: 50; border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .mobile-icon { font-size: 24px; color: var(--text-muted); transition: 0.3s; }
+        .mobile-icon.active { color: var(--text-main); }
+
+        /* --- Modal --- */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            z-index: 100; display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: all; }
+        .composer {
+            background: var(--bg-card); width: 90%; max-width: 500px;
+            border-radius: var(--radius-lg); padding: 24px; border: var(--border);
+            transform: translateY(20px); transition: transform 0.3s;
+        }
+        .modal-overlay.open .composer { transform: translateY(0); }
+
+        .big-heart {
+            position: absolute; color: var(--accent-pink); font-size: 80px;
+            pointer-events: none; animation: popUp 0.8s ease-out forwards; z-index: 50;
+        }
+        @keyframes popUp {
+            0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+            50% { transform: scale(1.2) rotate(0deg); opacity: 1; }
+            100% { transform: scale(1) translateY(-50px); opacity: 0; }
+        }
+
+        /* Responsive */
+        @media (max-width: 1100px) {
+            .app-container.mode-pulse { grid-template-columns: 80px 1fr 0px; }
+            .app-container.mode-flux { grid-template-columns: 0px 1fr 0px; }
+            
+            .sidebar .logo span, .sidebar .nav-item span, .btn-primary span, .user-info { display: none; }
+            .sidebar { padding: 20px 10px; align-items: center; }
+            .nav-item { padding: 12px; justify-content: center; }
+            .right-panel { display: none; }
+            .app-container.mode-flux .sidebar { display: none; }
+        }
+
+        @media (max-width: 600px) {
+            .app-container { display: block; }
+            .sidebar { display: none; }
+            .mobile-nav { display: flex; }
+            .reel-card { border-radius: 0; height: 100vh; margin-top: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container mode-pulse" id="app-container">
+        
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">
+                <i class="ri-radar-fill"></i>
+                <span>Vibe</span>
+            </div>
+            
+            <ul class="nav-links">
+                <li class="nav-item active" onclick="switchMode('pulse')" id="nav-pulse">
+                    <i class="ri-home-7-line"></i>
+                    <span>Pulse</span>
+                </li>
+                <li class="nav-item" onclick="switchMode('flux')" id="nav-flux">
+                    <i class="ri-movie-2-line"></i>
+                    <span>Flux</span>
+                </li>
+                <li class="nav-item">
+                    <i class="ri-notification-3-line"></i>
+                    <span>Alerts</span>
+                </li>
+            </ul>
+
+            <button class="btn-primary" onclick="openComposer()">
+                <i class="ri-quill-pen-line"></i>
+                <span>New Post</span>
+            </button>
+
+            <div class="user-mini" style="margin-top: auto; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                <img src="https://picsum.photos/seed/me/100/100" class="avatar">
+                <div class="user-info">
+                    <p style="font-weight: 700; font-size: 14px;">Alex Creator</p>
+                    <p style="color: var(--text-muted); font-size: 12px;">@alex</p>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Stage -->
+        <main class="main-stage">
+            
+            <!-- VIEW 1: PULSE -->
+            <div id="view-pulse" class="view-container active">
+                <header class="pulse-header">
+                    <h2 style="font-size: 22px; font-weight: 700;">Pulse</h2>
+                    <div style="display: flex; gap: 20px; color: var(--text-muted);">
+                        <span style="cursor: pointer; color: var(--text-main); font-weight: 600;">For You</span>
+                        <span style="cursor: pointer;">Following</span>
+                    </div>
+                </header>
+                <div id="pulse-feed-content">
+                    <!-- Posts injected here -->
+                </div>
+            </div>
+
+            <!-- VIEW 2: FLUX -->
+            <div id="view-flux" class="view-container">
+                <div class="flux-feed" id="flux-feed-content">
+                    <!-- Videos injected here -->
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Right Panel -->
+        <aside class="right-panel" id="right-panel"></aside>
+
+        <!-- Mobile Nav -->
+        <nav class="mobile-nav">
+            <i class="ri-home-5-line mobile-icon active" onclick="switchMode('pulse')"></i>
+            <i class="ri-search-line mobile-icon"></i>
+            <div onclick="openComposer()" style="width:40px; height:28px; background:linear-gradient(90deg, #00f2ea, #ff0050); border-radius:8px; display:flex; justify-content:center; align-items:center;">
+                <i class="ri-add-line" style="color:black; font-size:20px;"></i>
+            </div>
+            <i class="ri-movie-2-line mobile-icon" onclick="switchMode('flux')"></i>
+            <i class="ri-user-line mobile-icon"></i>
+        </nav>
+
+    </div>
+
+    <!-- Composer Modal -->
+    <div class="modal-overlay" id="composer-modal">
+        <div class="composer">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="font-size: 20px; font-weight: 700;">New Post</h3>
+                <i class="ri-close-line" style="font-size: 24px; cursor: pointer;" onclick="closeComposer()"></i>
+            </div>
+            <div style="display:flex; gap:16px;">
+                <img src="https://picsum.photos/seed/me/100/100" class="avatar">
+                <textarea id="post-input" style="flex:1; background:transparent; border:none; color:white; font-family:inherit; resize:none; height:100px;" placeholder="What's happening?"></textarea>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-top:16px; border-top:var(--border);">
+                <div style="color:var(--primary); display:flex; gap:12px;">
+                    <i class="ri-image-line cursor-pointer"></i>
+                    <i class="ri-file-gif-line cursor-pointer"></i>
+                </div>
+                <button class="btn-primary" onclick="submitPost()" style="padding: 8px 20px; font-size:14px;">Post</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Data ---
+        const postsData = [
+            { id: 1, name: "Luna Tech", handle: "@luna_tech", avatar: "https://picsum.photos/seed/luna/100/100", time: "2h", text: "Just launched a new design system for Vibe. It's all about glass and violet gradients. 🟣", image: "https://picsum.photos/seed/design/500/300", likes: 142, comments: 24, liked: false },
+            { id: 2, name: "David Chen", handle: "@dchen_art", avatar: "https://picsum.photos/seed/david/100/100", time: "4h", text: "Digital painting today. What do you think about contrast?", image: "https://picsum.photos/seed/art/500/400", likes: 890, comments: 56, liked: true },
+            { id: 3, name: "Space Explorer", handle: "@astro_daily", avatar: "https://picsum.photos/seed/space/100/100", time: "5h", text: "The nebula colors are unreal. Looking forward to telescope updates.", image: null, likes: 2300, comments: 120, liked: false }
+        ];
+
+        // Reliable, high-uptime video sources
+        const reelsData = [
+            { 
+                id:1, 
+                src: "https://media.w3.org/2010/05/sintel/trailer.mp4", 
+                poster: "https://media.w3.org/2010/05/sintel/poster.png", 
+                username: "Sintel_Vibes", 
+                desc: "The classic Sintel trailer. A timeless animation piece. 🐉", 
+                music: "Jan Morgenstern - Sintel", 
+                likes: "1.2M", 
+                avatar: "https://picsum.photos/seed/sintel/100/100" 
+            },
+            { 
+                id: 2, 
+                src: "https://media.w3.org/2010/05/bunny/trailer.mp4", 
+                poster: "https://media.w3.org/2010/05/bunny/poster.png",
+                username: "BigBunnyFan", 
+                desc: "Big Buck Bunny is still the GOAT. 🐰", 
+                music: "Jan Morgenstern - Big Buck Bunny", 
+                likes: "850K", 
+                avatar: "https://picsum.photos/seed/bunny/100/100" 
+            },
+            { 
+                id: 3, 
+                src: "https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4", 
+                poster: "https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4",
+                username: "NatureVibes", 
+                desc: "Spring is here! 🌼", 
+                music: "Sunny Day - Acoustic", 
+                likes: "22K", 
+                avatar: "https://picsum.photos/seed/flower/100/100" 
+            }
+        ];
+
+        // --- DOM Elements ---
+        const appContainer = document.getElementById('app-container');
+        const viewPulse = document.getElementById('view-pulse');
+        const viewFlux = document.getElementById('view-flux');
+        const pulseFeed = document.getElementById('pulse-feed-content');
+        const fluxFeed = document.getElementById('flux-feed-content');
+        const rightPanel = document.getElementById('right-panel');
+        const navPulse = document.getElementById('nav-pulse');
+        const navFlux = document.getElementById('nav-flux');
+        const mobileIcons = document.querySelectorAll('.mobile-icon');
+
+        let currentMode = 'pulse';
+        let observer = null;
+
+        // --- Render Functions ---
+        
+        function renderPulse() {
+            pulseFeed.innerHTML = '';
+            postsData.forEach(post => {
+                const html = `
+                <article class="post-card">
+                    <img src="${post.avatar}" class="avatar">
+                    <div style="flex:1;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                            <div><span class="user-name" style="font-weight:700;">${post.name}</span> <span style="color:var(--text-muted); font-size:14px;">${post.handle}</span></div>
+                            <i class="ri-more-fill" style="color:var(--text-muted); cursor:pointer;"></i>
+                        </div>
+                        <div style="font-size:16px; line-height:1.5; margin-bottom:12px;">${post.text}</div>
+                        ${post.image ? `<img src="${post.image}" style="width:100%; border-radius:12px; border:var(--border);">` : ''}
+                        <div class="pulse-actions">
+                            <button class="action-btn"><i class="ri-chat-1-line"></i> ${post.comments}</button>
+                            <button class="action-btn" style="color:var(--accent-green);"><i class="ri-repeat-2-line"></i></button>
+                            <button class="action-btn ${post.liked ? 'liked' : ''}" onclick="toggleLike(this, ${post.id})">
+                                <i class="${post.liked ? 'ri-heart-3-fill' : 'ri-heart-3-line'}"></i>
+                            </button>
+                            <button class="action-btn"><i class="ri-share-forward-line"></i></button>
+                        </div>
+                    </div>
+                </article>`;
+                pulseFeed.innerHTML += html;
+            });
+        }
+
+        function renderFlux() {
+            fluxFeed.innerHTML = '';
+            reelsData.forEach((reel, idx) => {
+                const html = `
+                <article class="reel-card" data-index="${idx}">
+                    <i class="ri-loader-4-line video-loader"></i>
+                    <video class="video-player" loop playsinline muted poster="${reel.poster}" onclick="togglePlay(this)">
+                        <source src="${reel.src}" type="video/mp4">
+                    </video>
+                    <div class="flux-overlay"></div>
+                    
+                    <div class="flux-info">
+                        <div style="font-weight:700; font-size:16px; margin-bottom:8px;">@${reel.username}</div>
+                        <div style="font-size:14px; margin-bottom:10px;">${reel.desc}</div>
+                        <div style="display:flex; align-items:center; gap:10px; font-size:14px;">
+                            <i class="ri-music-2-fill" style="color:var(--primary);"></i>
+                            <marquee scrollamount="3" style="width:150px;">${reel.music}</marquee>
+                        </div>
+                    </div>
+
+                    <div class="flux-sidebar">
+                        <div class="flux-action avatar-container">
+                            <img src="${reel.avatar}" class="avatar" style="width:48px; height:48px; border:2px solid white;">
+                            <div style="background:var(--primary); width:20px; height:20px; border-radius:50%; display:flex; justify-content:center; align-items:center; position:absolute; bottom:-5px; left:50%; transform:translateX(-50%);"><i class="ri-add-line" style="font-size:12px;"></i></div>
+                        </div>
+                        <div class="flux-action" onclick="toggleLikeFlux(this)">
+                            <div class="flux-icon-wrap"><i class="ri-heart-3-line"></i></div>
+                            <span style="font-size:12px;">${reel.likes}</span>
+                        </div>
+                        <div class="flux-action">
+                            <div class="flux-icon-wrap"><i class="ri-chat-3-line"></i></div>
+                            <span style="font-size:12px;">Share</span>
+                        </div>
+                        <div class="music-disc paused"><img src="${reel.avatar}" style="width:100%; height:100%; object-fit:cover;"></div>
+                    </div>
+                </article>`;
+                fluxFeed.innerHTML += html;
+                
+                // Double Click
+                const card = fluxFeed.lastElementChild;
+                card.addEventListener('dblclick', (e) => {
+                    const heart = document.createElement('i');
+                    heart.className = 'ri-heart-3-fill big-heart';
+                    heart.style.left = `${e.clientX - 40}px`;
+                    heart.style.top = `${e.clientY - 40}px`;
+                    card.appendChild(heart);
+                    setTimeout(() => heart.remove(), 1000);
+                });
+
+                // Loading State Handling
+                const video = card.querySelector('video');
+                const loader = card.querySelector('.video-loader');
+                
+                video.addEventListener('waiting', () => loader.style.display = 'block');
+                video.addEventListener('playing', () => loader.style.display = 'none');
+                video.addEventListener('canplay', () => loader.style.display = 'none');
+            });
+        }
+
+        function renderRightPanel() {
+            rightPanel.innerHTML = '';
+            if (currentMode === 'pulse') {
+                rightPanel.innerHTML = `
+                <div class="widget-card">
+                    <h3 class="widget-title">Trends</h3>
+                    <div style="margin-bottom:15px;"><div style="font-size:12px; color:var(--text-muted);">Technology · Trending</div><div style="font-weight:600;">#WebDesign</div></div>
+                    <div style="margin-bottom:15px;"><div style="font-size:12px; color:var(--text-muted);">Design · Trending</div><div style="font-weight:600;">Minimalism</div></div>
+                </div>`;
+            } else {
+                rightPanel.innerHTML = `<h3 class="widget-title">Up Next</h3><div id="queue-list"></div>`;
+                const list = document.getElementById('queue-list');
+                reelsData.forEach((reel, idx) => {
+                    list.innerHTML += `
+                    <div class="queue-item" onclick="scrollToReel(${idx})">
+                        <div style="width:60px; height:80px; background:#333; border-radius:8px; overflow:hidden;">
+                            <img src="${reel.poster}" style="width:100%; height:100%; object-fit:cover;">
+                        </div>
+                        <div>
+                            <div style="font-weight:600; font-size:14px;">@${reel.username}</div>
+                            <div style="font-size:12px; color:var(--text-muted);">${reel.likes} likes</div>
+                        </div>
+                    </div>`;
+                });
+            }
+        }
+
+        // --- Logic ---
+
+        function switchMode(mode) {
+            if (mode === currentMode) return;
+            currentMode = mode;
+
+            // Update Nav
+            navPulse.classList.toggle('active', mode === 'pulse');
+            navFlux.classList.toggle('active', mode === 'flux');
+            
+            mobileIcons.forEach(icon => icon.classList.remove('active'));
+            if(mode === 'pulse') mobileIcons[0].classList.add('active');
+            else mobileIcons[3].classList.add('active');
+
+            // Switch Layout
+            if (mode === 'flux') {
+                appContainer.classList.remove('mode-pulse');
+                appContainer.classList.add('mode-flux');
+                viewPulse.classList.remove('active');
+                
+                // Small delay to allow CSS transition, then show Flux
+                setTimeout(() => {
+                    viewFlux.classList.add('active');
+                    initVideoObserver();
+                }, 50); 
+                
+            } else {
+                appContainer.classList.remove('mode-flux');
+                appContainer.classList.add('mode-pulse');
+                viewFlux.classList.remove('active');
+                viewPulse.classList.add('active');
+                if(observer) observer.disconnect(); 
+            }
+
+            // Render Right Panel
+            rightPanel.style.opacity = '0';
+            setTimeout(() => {
+                renderRightPanel();
+                rightPanel.style.opacity = '1';
+            }, 200);
+        }
+
+        function initVideoObserver() {
+            if(observer) observer.disconnect();
+            
+            // Ensure we have cards before observing
+            const cards = document.querySelectorAll('.reel-card');
+            if(cards.length === 0) return;
+
+            // Wait slightly longer to ensure view is fully rendered/visible to browser
+            setTimeout(() => {
+                const options = { root: fluxFeed, threshold: 0.6 };
+                
+                observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        const video = entry.target.querySelector('video');
+                        const disc = entry.target.querySelector('.music-disc');
+                        
+                        if (entry.isIntersecting) {
+                            // Try to play, catch autoplay errors
+                            const playPromise = video.play();
+                            if (playPromise !== undefined) {
+                                playPromise.then(() => {
+                                    disc.classList.remove('paused');
+                                }).catch(error => {
+                                    console.log("Autoplay prevented", error);
+                                    disc.classList.add('paused');
+                                });
+                            }
+                        } else {
+                            video.pause();
+                            disc.classList.add('paused');
+                            video.currentTime = 0;
+                        }
+                    });
+                }, options);
+                
+                cards.forEach(card => observer.observe(card));
+                
+                // Manually trigger first video immediately
+                if(cards[0]) {
+                    const firstVideo = cards[0].querySelector('video');
+                    firstVideo.play().catch(()=>{}); // Silent fail if blocked
+                    cards[0].querySelector('.music-disc').classList.remove('paused');
+                }
+            }, 300); 
+        }
+
+        function togglePlay(video) {
+            const disc = video.parentElement.querySelector('.music-disc');
+            if(video.paused) { 
+                video.play(); 
+                disc.classList.remove('paused');
+            } 
+            else { 
+                video.pause(); 
+                disc.classList.add('paused');
+            }
+        }
+
+        function toggleLikeFlux(el) {
+            const icon = el.querySelector('i');
+            if(icon.classList.contains('ri-heart-3-line')) {
+                icon.classList.remove('ri-heart-3-line');
+                icon.classList.add('ri-heart-3-fill');
+                icon.style.color = 'var(--accent-pink)';
+                el.querySelector('.flux-icon-wrap').style.transform = 'scale(1.2)';
+                setTimeout(() => el.querySelector('.flux-icon-wrap').style.transform = 'scale(1)', 200);
+            } else {
+                icon.classList.remove('ri-heart-3-fill');
+                icon.classList.add('ri-heart-3-line');
+                icon.style.color = 'white';
+            }
+        }
+
+        function scrollToReel(idx) {
+            const cards = document.querySelectorAll('.reel-card');
+            if(cards[idx]) cards[idx].scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- Pulse Logic ---
+        function toggleLike(btn, id) {
+            const icon = btn.querySelector('i');
+            if(icon.classList.contains('ri-heart-3-line')) {
+                icon.className = 'ri-heart-3-fill';
+                btn.classList.add('liked');
+            } else {
+                icon.className = 'ri-heart-3-line';
+                btn.classList.remove('liked');
+            }
+        }
+
+        // --- Composer ---
+        function openComposer() {
+            document.getElementById('composer-modal').classList.add('open');
+        }
+        function closeComposer() {
+            document.getElementById('composer-modal').classList.remove('open');
+        }
+        function submitPost() {
+            const text = document.getElementById('post-input').value;
+            if(!text) return;
+            postsData.unshift({
+                id: Date.now(),
+                name: "Alex Creator",
+                handle: "@alex",
+                avatar: "https://picsum.photos/seed/me/100/100",
+                time: "now",
+                text: text,
+                image: null,
+                likes: 0,
+                comments: 0,
+                liked: false
+            });
+            renderPulse();
+            closeComposer();
+            if(currentMode === 'pulse') viewPulse.scrollTop = 0;
+        }
+
+        // --- Init ---
+        renderPulse();
+        renderFlux();
+        renderRightPanel();
+
+    </script>
+</body>
 </html>
