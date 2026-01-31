@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { mockTweets } from '../data/mockTweets';
 import { TweetCard } from './TweetCard';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Skeleton } from '@/components/ui/skeleton';
+import { SkeletonTweet } from '@/components/ui/skeleton';
 
 export function TweetsFeed() {
   const [isLoading, setIsLoading] = useState(true);
@@ -17,16 +17,8 @@ export function TweetsFeed() {
       <ScrollArea className="h-full">
         {isLoading ? (
           <>
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="bg-card p-4 border-b border-subtle">
-                <div className="flex gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/10" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 w-1/2 bg-primary/10 rounded" />
-                    <div className="h-4 w-1/2 bg-primary/10 rounded" />
-                  </div>
-                </div>
-              </div>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <SkeletonTweet key={i} />
             ))}
           </>
         ) : (
