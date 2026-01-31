@@ -1,5 +1,7 @@
 import { Search, Zap } from 'lucide-react';
 import { ModeSwitcher } from './ModeSwitcher';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface NavigationProps {
   mode: 'tweets' | 'shorts';
@@ -17,9 +19,9 @@ export function Navigation({ mode, onModeChange }: NavigationProps) {
         <ModeSwitcher mode={mode} onModeChange={onModeChange} />
 
         <div className="flex items-center gap-4">
-          <button className="p-2 hover:text-primary transition-colors">
-            <Search className="w-5 h-5" />
-          </button>
+          <Button variant="ghost" size="icon" className="group">
+            <Search className="w-5 h-5 group-hover:text-primary transition-colors" />
+          </Button>
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary" />
         </div>
       </div>
