@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "collaborate": "tsx scripts/collaborate.ts",
+    "collaborate:auto": "AUTO_APPROVE=true tsx scripts/collaborate.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",
@@ -38,6 +40,7 @@
     "globals": "^16.5.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",
+    "tsx": "^4.19.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4"
