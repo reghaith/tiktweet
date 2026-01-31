@@ -6,31 +6,33 @@ export default {
       "./src/**/*.{js,ts,jsx,tsx}",
     ],
   theme: {
-   	extend: {
-   		fontFamily: {
-   			sans: [
-   				'Inter',
-   				'system-ui',
-   				'sans-serif'
-   			]
-   		},
+  	extend: {
+  		fontFamily: {
+  			sans: [
+  				'Outfit',
+  				'system-ui',
+  				'sans-serif'
+  			]
+  		},
     	 	colors: {
     			background: 'hsl(var(--background))',
     			card: {
     				DEFAULT: 'hsl(var(--card))',
     				foreground: 'hsl(var(--card-foreground))'
     			},
-    			'card-foreground': '#E5E7EB',
+    			'card-foreground': '#F4F4F5',
     			primary: {
     				DEFAULT: 'hsl(var(--primary))',
-    				foreground: 'hsl(var(--primary-foreground))'
+    				foreground: 'hsl(var(--primary-foreground))',
+    				hover: 'hsl(var(--primary-hover))',
+    				glow: 'hsl(var(--primary-glow))'
     			},
     			secondary: {
     				DEFAULT: 'hsl(var(--secondary))',
     				foreground: 'hsl(var(--secondary-foreground))'
     			},
-    			'primary-foreground': '#E5E7EB',
-    			'muted-foreground': '#9CA3AF',
+    			'primary-foreground': '#F4F4F5',
+    			'muted-foreground': '#A1A1AA',
     			foreground: 'hsl(var(--foreground))',
     			popover: {
     				DEFAULT: 'hsl(var(--popover))',
@@ -59,24 +61,27 @@ export default {
     				'5': 'hsl(var(--chart-5))'
     			},
                 repost: 'hsl(var(--repost))',
-         },
-         customColors: {
-             background: 'hsl(216 1% 5%)',
-             card: 'hsl(221 2% 10%)',
-             repost: 'hsl(142 76% 36%)',
-         },
+                pink: 'hsl(var(--accent-pink))',
+                blue: 'hsl(var(--accent-blue))',
+                green: 'hsl(var(--accent-green))',
+          },
+          customColors: {
+              background: 'hsl(240 10% 4%)',
+              card: 'hsl(240 5% 11%)',
+              repost: 'hsl(142 71% 45%)',
+          },
     	backgroundImage: {
     			'gradient-to-t': 'linear-gradient(to top, var(--tw-gradient-stops))'
     	},
     	borderRadius: {
-    			lg: 'var(--radius)',
-    			md: 'calc(var(--radius) - 2px)',
-    			sm: 'calc(var(--radius) - 4px)',
-             xs: '0.25rem',
-             tweet: '0.5rem',
-             container: '1rem'
+    			lg: 'var(--radius-lg)',
+    			md: 'var(--radius-md)',
+    			sm: 'var(--radius-sm)',
+              xs: '0.25rem',
+              tweet: '0.5rem',
+              container: '1rem'
     	}
     	}
     	},
-   plugins: [require("tailwindcss-animate")],
+    plugins: [require("tailwindcss-animate")],
 }

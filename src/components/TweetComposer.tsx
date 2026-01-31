@@ -1,80 +1,98 @@
-import { Image, Film, BarChart3, X } from 'lucide-react';
+import { Image, File, Smile, X } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export function TweetComposer() {
+  const [isOpen, setIsOpen] = useState(false);
   const [content, setContent] = useState('');
 
+  const handleSubmit = () => {
+    if (content.trim()) {
+      console.log('Posting:', content);
+      setContent('');
+      setIsOpen(false);
+    }
+  };
+
   return (
-    <Card className="border-b border-white/5 hover:bg-white/[0.02] transition-all duration-300 rounded-none p-4">
-      <div className="flex gap-3">
-        <Avatar className="h-10 w-10 flex-shrink-0">
-          <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-semibold">
+    <>
+      <div className="px-5 py-4 border-b border-border flex gap-4">
+        <Avatar className="h-12 w-12 flex-shrink-0">
+          <AvatarFallback className="bg-gradient-to-br from-primary to-pink text-white font-bold text-lg">
             Y
           </AvatarFallback>
         </Avatar>
-
-        <div className="flex-1 min-w-0">
-          <div className="relative">
-            <textarea
-              placeholder="What's happening?"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="w-full bg-transparent text-foreground placeholder:text-muted-foreground text-[15px] resize-none outline-none min-h-[60px] max-h-[200px]"
-              rows={2}
-            />
-            {content && (
-              <button
-                onClick={() => setContent('')}
-                className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 rounded-full text-primary hover:bg-primary/10 transition-all duration-200"
-              >
-                <Image className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 rounded-full text-primary hover:bg-primary/10 transition-all duration-200"
-              >
-                <Film className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 rounded-full text-primary hover:bg-primary/10 transition-all duration-200"
-              >
-                <BarChart3 className="h-5 w-5" />
-              </Button>
-            </div>
-
-            <Button
-              disabled={!content.trim()}
-              className={cn(
-                'px-5 py-2 rounded-full font-bold transition-all duration-200',
-                content.trim()
-                  ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-primary/25'
-                  : 'bg-primary/20 text-primary/40 cursor-not-allowed'
-              )}
-            >
-              Post
-            </Button>
-          </div>
+        <div
+          className="flex-1 min-w-0 cursor-text"
+          onClick={() => setIsOpen(true)}
+        >
+          <div className="text-muted-foreground text-lg">What's happening?</div>
         </div>
       </div>
-    </Card>
+
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center transition-opacity duration-300"
+          onClick={() => setIsOpen(false)}
+        >
+          <div
+            className="bg-card w-full max-w-[550px] rounded-lg p-6 border border-border shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-transform duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-xl font-bold">New Post</h3>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="flex gap-4 mb-5">
+              <Avatar className="h-12 w-12 flex-shrink-0">
+                <AvatarFallback className="bg-gradient-to-br from-primary to-pink text-white font-bold text-lg">
+                  Y
+                </AvatarFallback>
+              </Avatar>
+              <textarea
+                placeholder="What's happening?"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground text-lg resize-none outline-none min-h-[100px]"
+              />
+            </div>
+
+            <div className="flex justify-between items-center pt-4 border-t border-border">
+              <div className="flex gap-3 text-primary">
+                <button className="hover:text-primary-hover transition-colors">
+                  <Image className="w-5 h-5" />
+                </button>
+                <button className="hover:text-primary-hover transition-colors">
+                  <File className="w-5 h-5" />
+                </button>
+                <button className="hover:text-primary-hover transition-colors">
+                  <Smile className="w-5 h-5" />
+                </button>
+              </div>
+
+              <button
+                onClick={handleSubmit}
+                disabled={!content.trim()}
+                className={cn(
+                  'px-6 py-2.5 rounded-2xl font-semibold transition-colors',
+                  content.trim()
+                    ? 'bg-primary text-primary-foreground hover:bg-primary-hover'
+                    : 'bg-muted text-muted-foreground cursor-not-allowed'
+                )}
+              >
+                Post
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
