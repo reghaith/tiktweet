@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, MessageCircle, Share2, Disc3, Music } from 'lucide-react';
 import type { Short } from '../data/mockShorts';
@@ -128,5 +129,3 @@ export function ShortItem({ short }: ShortItemProps) {
     </div>
   );
 }
-
-import { useState } from 'react';

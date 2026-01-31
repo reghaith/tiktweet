@@ -1,42 +1,36 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Navigation } from './components/Navigation';
+import { Sidebar } from './components/Sidebar';
 import { TweetsFeed } from './components/TweetsFeed';
 import { ShortsFeed } from './components/ShortsFeed';
-import { Command, Search } from 'lucide-react';
 
 function App() {
   const [mode, setMode] = useState<'tweets' | 'shorts'>('tweets');
   const feedRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [mode]);
-
-  const handleModeChange = (newMode: 'tweets' | 'shorts') => {
-    setMode(newMode);
-    setTimeout(() => {
-      feedRef.current?.focus();
-    }, 100);
-  };
-
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation mode={mode} onModeChange={handleModeChange} />
+    <div className="min-h-screen bg-background flex flex-col md:flex-row">
+      <Sidebar />
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          ref={feedRef}
-          key={mode}
-          initial={{ opacity: 0, y: mode === 'tweets' ? 20 : -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: mode === 'tweets' ? -20 : 20 }}
-          transition={{ duration: 0.3 }}
-          tabIndex={0}
-        >
-          {mode === 'tweets' ? <TweetsFeed /> : <ShortsFeed />}
-        </motion.div>
-      </AnimatePresence>
+      <main className="flex-1 ml-0 md:ml-20 mb-16 md:mb-0 overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            ref={feedRef}
+            key={mode}
+            initial={{ opacity: 0, x: mode === 'tweets' ? -20 : 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: mode === 'tweets' ? 20 : -20 }}
+            transition={{ duration: 0.3 }}
+            className="h-full"
+          >
+            {mode === 'tweets' ? (
+              <TweetsFeed onModeChange={setMode} />
+            ) : (
+              <ShortsFeed onModeChange={setMode} />
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </main>
     </div>
   );
 }

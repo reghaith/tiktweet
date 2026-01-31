@@ -1,7 +1,6 @@
 import { Search, Zap } from 'lucide-react';
 import { ModeSwitcher } from './ModeSwitcher';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 interface NavigationProps {
   mode: 'tweets' | 'shorts';
