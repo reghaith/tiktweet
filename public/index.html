@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe | Login</title>
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Exact same palette as main app */
+            --bg-body: #09090b;
+            --bg-glass: rgba(24, 24, 27, 0.6);
+            
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --primary-glow: rgba(139, 92, 246, 0.3);
+            
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            
+            --error: #ef4444;
+            --success: #10b981;
+
+            --radius-lg: 24px;
+            --radius-md: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Subtle animated background mesh */
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 40%);
+        }
+
+        /* --- Auth Container --- */
+        .auth-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .glass-card {
+            background: rgba(24, 24, 27, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-lg);
+            padding: 40px 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .glass-card.shake {
+            animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        /* --- Header --- */
+        .logo-area {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-icon {
+            font-size: 48px;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .app-name {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .tagline {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* --- Tabs --- */
+        .auth-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px;
+            border-radius: var(--radius-md);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            z-index: 2;
+            transition: color 0.3s;
+        }
+
+        .tab-btn.active {
+            color: var(--text-main);
+        }
+
+        /* Sliding background for tabs */
+        .tab-bg {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: calc(50% - 4px);
+            height: calc(100% - 8px);
+            background: var(--bg-body);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+        }
+
+        /* --- Forms --- */
+        .form-container {
+            position: relative;
+            overflow: hidden; /* Hide overflow for transitions */
+            min-height: 300px; /* Ensure space for inputs */
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        /* Form States */
+        .auth-form.hidden-right {
+            opacity: 0;
+            transform: translateX(100%);
+            pointer-events: none;
+        }
+        
+        .auth-form.hidden-left {
+            opacity: 0;
+            transform: translateX(-100%);
+            pointer-events: none;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-field {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 16px 16px 16px 45px; /* Left padding for icon */
+            border-radius: var(--radius-md);
+            color: var(--text-main);
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .input-field:focus {
+            border-color: var(--primary);
+            background: rgba(139, 92, 246, 0.05);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .input-field:focus + .input-icon {
+            color: var(--primary);
+        }
+
+        /* Error Message */
+        .error-msg {
+            color: var(--error);
+            font-size: 13px;
+            position: absolute;
+            bottom: -18px;
+            left: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .input-group.error .input-field { border-color: var(--error); }
+        .input-group.error .error-msg { opacity: 1; }
+
+        /* Buttons */
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 10px 20px -5px var(--primary-glow);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px var(--primary-glow);
+        }
+
+        .btn-submit:active {
+            transform: scale(0.98);
+        }
+
+        .btn-submit i { margin-right: 8px; }
+
+        .forgot-pass {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+        .forgot-pass:hover { color: var(--primary); }
+
+        /* --- Success / Welcome Screen (Simulated Main App) --- */
+        #app-view {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-body);
+            z-index: 20;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        #app-view.active { display: flex; animation: fadeIn 0.5s ease; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Unique Code Display */
+        .unique-code-card {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .code-display {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 4px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px 30px;
+            border-radius: var(--radius-md);
+        }
+
+        .instruction {
+            color: var(--text-muted);
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+
+        .discord-btn {
+            background: #5865F2;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 0 0;
+            transition: transform 0.2s;
+        }
+
+        .discord-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 16px -3px rgba(88, 101, 242, 0.3); }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .glass-card { padding: 30px 20px; border-radius: 0; height: 100%; border: none; }
+            .auth-wrapper { max-width: 100%; height: 100%; display: flex; align-items: center; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="auth-wrapper">
+        <div class="glass-card" id="auth-card">
+            
+            <div class="logo-area">
+                <i class="ri-radar-fill logo-icon"></i>
+                <h1 class="app-name">Vibe</h1>
+                <p class="tagline">The new standard of social.</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="auth-tabs">
+                <div class="tab-bg" id="tab-bg"></div>
+                <button class="tab-btn active" onclick="switchAuthMode('login')">Log In</button>
+                <button class="tab-btn" onclick="switchAuthMode('register')">Join</button>
+            </div>
+
+            <div class="form-container">
+                
+                <!-- LOGIN FORM -->
+                <form class="auth-form" id="login-form" onsubmit="handleLogin(event)">
+                    <div class="input-group" id="login-user-group">
+                        <input type="text" class="input-field" id="login-username" placeholder="Username" autocomplete="off">
+                        <i class="ri-user-3-line input-icon"></i>
+                        <span class="error-msg">Username required</span>
+                    </div>
+
+                    <div class="input-group" id="login-pass-group">
+                        <input type="password" class="input-field" id="login-password" placeholder="Password">
+                        <i class="ri-lock-2-line input-icon"></i>
+                        <span class="error-msg">Password required</span>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        Log In <i class="ri-arrow-right-line"></i>
+                    </button>
+                    
+                    <p class="forgot-pass">Forgot password?</p>
+                </form>
+
+                <!-- REGISTER FORM -->
+                <form class="auth-form hidden-right" id="register-form" onsubmit="handleRegister(event)">
+                    
+                    <div class="input-group" id="reg-name-group">
+                        <input type="text" class="input-field" id="reg-displayname" placeholder="Display Name" autocomplete="off">
+                        <i class="ri-user-smile-line input-icon"></i>
+                        <span class="error-msg">Name required</span>
+                    </div>
+
+                    <div class="input-group" id="reg-user-group">
+                        <input type="text" class="input-field" id="reg-username" placeholder="Username" autocomplete="off">
+                        <i class="ri-at-line input-icon"></i>
+                        <span class="error-msg">Username required</span>
+                    </div>
+
+                    <div class="input-group" id="reg-pass-group">
+                        <input type="password" class="input-field" id="reg-password" placeholder="Password">
+                        <i class="ri-lock-2-line input-icon"></i>
+                        <span class="error-msg">Password required</span>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        Create Account <i class="ri-user-add-line"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success / Unique Code View -->
+    <div id="app-view">
+        <i class="ri-checkbox-circle-fill" style="font-size: 60px; color: var(--success); margin-bottom: 20px;"></i>
+        <h2 style="font-size: 32px; font-weight: 700;">Welcome back!</h2>
+        <p id="welcome-msg" style="color: var(--text-muted); margin-bottom: 30px; font-size: 18px;">@username</p>
+        
+        <div class="unique-code-card">
+            <div style="text-align: center; margin-bottom: 15px;">
+                <i class="ri-key-2-line" style="font-size: 32px; color: var(--text-muted);"></i>
+            </div>
+            <div style="text-align: center;">
+                <p style="margin-bottom: 10px; font-size: 14px; color: var(--text-muted);">Your Unique Code:</p>
+                <div class="code-display" id="unique-code-display">USR_ABC123</div>
+            </div>
+            <p class="instruction">
+                <strong>Next Step:</strong><br>
+                1. Copy this unique code<br>
+                2. Go to Discord <strong>#media-storage</strong> channel<br>
+                3. Send the code to link your account
+            </p>
+        </div>
+
+        <button onclick="logout()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 20px; color: white; cursor: pointer; margin-top: 30px;">
+            Log Out
+        </button>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const tabBg = document.getElementById('tab-bg');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const authCard = document.getElementById('auth-card');
+        const appView = document.getElementById('app-view');
+        const welcomeMsg = document.getElementById('welcome-msg');
+        const uniqueCodeDisplay = document.getElementById('unique-code-display');
+
+        let isLogin = true;
+
+        // --- Switching Modes ---
+        function switchAuthMode(mode) {
+            isLogin = (mode === 'login');
+            
+            // Animate Tab Background
+            if (isLogin) {
+                tabBg.style.transform = 'translateX(0)';
+            } else {
+                tabBg.style.transform = 'translateX(100%)'; // Move to right
+            }
+
+            // Update Buttons
+            const btns = document.querySelectorAll('.tab-btn');
+            btns[0].classList.toggle('active', isLogin);
+            btns[1].classList.toggle('active', !isLogin);
+
+            // Switch Forms
+            if (isLogin) {
+                loginForm.classList.remove('hidden-left');
+                registerForm.classList.add('hidden-right');
+            } else {
+                loginForm.classList.add('hidden-left');
+                registerForm.classList.remove('hidden-right');
+            }
+
+            // Clear errors and inputs
+            document.querySelectorAll('.input-group').forEach(el => el.classList.remove('error'));
+            document.querySelectorAll('input').forEach(el => el.value = '');
+        }
+
+        // --- Helper: Validation ---
+        function validate(formType) {
+            let isValid = true;
+            
+            if (formType === 'login') {
+                const user = document.getElementById('login-username');
+                const pass = document.getElementById('login-password');
+                
+                if (!user.value.trim()) {
+                    document.getElementById('login-user-group').classList.add('error');
+                    isValid = false;
+                } else {
+                    document.getElementById('login-user-group').classList.remove('error');
+                }
+
+                if (!pass.value) {
+                    document.getElementById('login-pass-group').classList.add('error');
+                    isValid = false;
+                } else {
+                    document.getElementById('login-pass-group').classList.remove('error');
+                }
+            } else {
+                const name = document.getElementById('reg-displayname');
+                const user = document.getElementById('reg-username');
+                const pass = document.getElementById('reg-password');
+
+                if (!name.value.trim()) {
+                    document.getElementById('reg-name-group').classList.add('error');
+                    isValid = false;
+                } else document.getElementById('reg-name-group').classList.remove('error');
+
+                if (!user.value.trim()) {
+                    document.getElementById('reg-user-group').classList.add('error');
+                    isValid = false;
+                } else document.getElementById('reg-user-group').classList.remove('error');
+
+                if (!pass.value) {
+                    document.getElementById('reg-pass-group').classList.add('error');
+                    isValid = false;
+                } else document.getElementById('reg-pass-group').classList.remove('error');
+            }
+            return isValid;
+        }
+
+        function shakeCard() {
+            authCard.classList.add('shake');
+            setTimeout(() => authCard.classList.remove('shake'), 400);
+        }
+
+        // --- Logic: Register (Calls Backend API) ---
+        async function handleRegister(e) {
+            e.preventDefault();
+            if (!validate('register')) {
+                shakeCard();
+                return;
+            }
+
+            const displayName = document.getElementById('reg-displayname').value.trim();
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value;
+
+            const btn = registerForm.querySelector('button');
+            btn.innerHTML = '<i class="ri-loader-4-line"></i> Creating...';
+            btn.disabled = true;
+
+            try {
+                // Call backend API
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: displayName })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Show success with unique code
+                    enterApp(data.user, data.user.unique_code);
+                } else {
+                    alert(data.error || 'Registration failed');
+                    shakeCard();
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert('Failed to connect to server. Please try again.');
+                shakeCard();
+            } finally {
+                btn.innerHTML = 'Create Account <i class="ri-user-add-line"></i>';
+                btn.disabled = false;
+            }
+        }
+
+        // --- Logic: Login (Calls Backend API) ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            if (!validate('login')) {
+                shakeCard();
+                return;
+            }
+
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            const btn = loginForm.querySelector('button');
+            btn.innerHTML = '<i class="ri-loader-4-line"></i> Logging in...';
+            btn.disabled = true;
+
+            try {
+                // Call backend API (would be /login endpoint when implemented)
+                // For now, we'll simulate successful login
+                setTimeout(() => {
+                    const mockUserData = { displayName: username, username: username };
+                    enterApp(mockUserData);
+                    btn.innerHTML = 'Log In <i class="ri-arrow-right-line"></i>';
+                    btn.disabled = false;
+                }, 1000);
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Failed to connect to server. Please try again.');
+                shakeCard();
+                btn.innerHTML = 'Log In <i class="ri-arrow-right-line"></i>';
+                btn.disabled = false;
+            }
+        }
+
+        function enterApp(userData, uniqueCode = null) {
+            // Save session
+            sessionStorage.setItem('currentUser', JSON.stringify(userData));
+            
+            // Show unique code if available
+            if (uniqueCode) {
+                uniqueCodeDisplay.textContent = uniqueCode;
+            }
+            
+            // Animate transition
+            document.querySelector('.auth-wrapper').style.opacity = '0';
+            document.querySelector('.auth-wrapper').style.transform = 'scale(0.9)';
+            
+            setTimeout(() => {
+                // Show welcome screen
+                welcomeMsg.textContent = `Hello, ${userData.displayName}`;
+                appView.classList.add('active');
+            }, 300);
+        }
+
+        function logout() {
+            sessionStorage.removeItem('currentUser');
+            location.reload(); // Simple reload to go back to login
+        }
+
+        // Initialize
+        // Check if session exists (Simulated persistence)
+        const currentUser = sessionStorage.getItem('currentUser');
+        if (currentUser) {
+            const userData = JSON.parse(currentUser);
+            // Try to get unique code from backend (simulated)
+            const mockCode = 'USR_' + userData.username.toUpperCase().substring(0, 6);
+            enterApp(userData, mockCode);
+        }
+    </script>
+</body>
+</html>
